@@ -70,8 +70,29 @@ async def play_stream_continuous(voice_client, stream_url_to_play, guild_id, tex
 
         await asyncio.sleep(10)
         if voice_client.is_connected() and current_guild_status_after.get('playing'):
-            print(f"Reintentando reproducir stream ({stream_url_to_play}) en {voice_client.guild.name}")
-            bot.loop.create_task(play_stream_continuous(voice_client, stream_url_to_play, guild_id, text_channel_for_notif))
+            # --- Modification Start ---
+            guild_status_for_retry = active_guilds_playback_status.get(guild_id)
+            if not guild_status_for_retry:
+                print(f"Error en retry: No se encontró estado para guild {guild_id}. No se puede reintentar.")
+                if text_channel_for_notif:
+                    try: await text_channel_for_notif.send("Error interno: No se encontró el estado del servidor para reintentar la reproducción.")
+                    except discord.Forbidden: pass
+                return
+
+            latest_stream_url = guild_status_for_retry.get('current_stream_url')
+
+            if not latest_stream_url or latest_stream_url == "YOUR_STREAM_URL_HERE":
+                error_msg = f"Error en retry: URL de stream inválida o no configurada para {voice_client.guild.name} (URL: '{latest_stream_url}'). No se puede reintentar."
+                print(error_msg)
+                if text_channel_for_notif:
+                    try: await text_channel_for_notif.send("Error: La URL del stream no está configurada o es inválida. No se puede reintentar la reproducción.")
+                    except discord.Forbidden: pass
+                current_guild_status_after['playing'] = False # Ensure we don't try to play a bad URL again
+                return
+
+            print(f"Reintentando reproducir stream con URL actualizada ({latest_stream_url}) en {voice_client.guild.name}")
+            bot.loop.create_task(play_stream_continuous(voice_client, latest_stream_url, guild_id, text_channel_for_notif))
+            # --- Modification End ---
         else:
             print(f"No se reinicia el stream en {voice_client.guild.name}, estado cambió o desconectado.")
 
