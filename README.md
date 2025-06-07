@@ -27,8 +27,8 @@ Sigue estos pasos para poner en marcha StreamBot en tu servidor:
 
 1.  **Clona este repositorio (si aún no lo has hecho):**
     ```bash
-    git clone <URL_DEL_REPOSITORIO_AQUI> # Reemplaza con la URL real del repo
-    cd StreamBot # O el nombre del directorio del repo
+    git clone https://github.com/spyflow/StreamBot.git
+    cd StreamBot
     ```
 
 2.  **Crea un Entorno Virtual (Recomendado):**
